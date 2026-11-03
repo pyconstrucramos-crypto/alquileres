@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cobros & Rentas</title>
+  <style>
+    :root {
+      --sidebar-bg: #282766;
+      --sidebar-card: #1f1e52;
+      --sidebar-hover: #373582;
+      --sidebar-active: #3c3996;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #e11d48;
+      --danger-bg: #ffe4e6;
+      --success: #059669;
+      --success-bg: #d1fae5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    .app-layout { display: flex; min-height: 100vh; width: 100%; }
+
+    /* Barra Lateral */
+    .sidebar { width: 270px; background-color: var(--sidebar-bg); color: white; padding: 22px 16px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .brand-icon { width: 42px; height: 42px; background: #6366f1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .brand-text h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.2px; }
+    .brand-text p { font-size: 11px; color: #a5b4fc; text-transform: capitalize; margin-top: 1px; }
+
+    .btn-new-record { width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: 0.15s; box-shadow: 0 4px 14px rgba(79,70,229,0.35); margin-bottom: 20px; }
+    .btn-new-record:hover { background: #4338ca; }
+    .btn-new-record:active { transform: scale(0.98); }
+
+    .nav-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; padding-left: 4px; }
+    .nav-list { display: flex; flex-direction: column; gap: 4px; }
+    .nav-btn { width: 100%; text-align: left; background: transparent; border: none; color: #cbd5e1; padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.15s; }
+    .nav-btn:hover { background: var(--sidebar-hover); color: white; }
+    .nav-btn.active { background: var(--sidebar-active); color: white; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .nav-btn-icon { font-size: 15px; width: 20px; text-align: center; }
+
+    .sidebar-bottom-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .side-card { background: var(--sidebar-card); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 14px; }
+    .side-card-title { font-size: 11px; color: #94a3b8; font-weight: 600; }
+    .side-card-val { font-size: 17px; font-weight: 800; margin-top: 3px; }
+
+    /* Área de Trabajo */
+    .main-workspace { flex: 1; padding: 22px 28px; overflow-x: hidden; }
+    .mobile-header { display: none; background: var(--sidebar-bg); color: white; padding: 12px 16px; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 30; }
+
+    /* KPIs */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .kpi-box { background: var(--card-bg); border: 1px solid #edf2f7; border-radius: 16px; padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: flex-start; }
+    .kpi-box-lbl { font-size: 12px; font-weight: 600; color: #64748b; }
+    .kpi-box-val { font-size: 22px; font-weight: 800; margin-top: 5px; }
+    .kpi-box-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+
+    /* Filtros */
+    .filter-bar { background: white; padding: 14px 18px; border-radius: 14px; border: 1px solid #edf2f7; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .filter-item { display: flex; flex-direction: column; gap: 3px; }
+    .filter-item label { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+    .filter-select { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 700; outline: none; background: #fff; color: var(--text); }
+    .search-box { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; outline: none; width: 200px; height: 34px; margin-top: auto; }
+
+    /* Tablas y Tarjetas */
+    .content-box { background: var(--card-bg); border-radius: 16px; border: 1px solid #edf2f7; box-shadow: 0 1px 4px rgba(0,0,0,0.02); overflow: hidden; display: block; }
+    .content-box-header { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    .content-box-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #334155; }
+
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { padding: 12px 16px; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9; background: #fafcff; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+    tr:hover td { background-color: #fbfcfe; }
+
+    /* Badges */
+    .badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-paid { background: var(--success-bg); color: var(--success); }
+    .badge-due { background: var(--warning-bg); color: var(--warning); }
+    .badge-overdue { background: var(--danger-bg); color: var(--danger); }
+    .badge-term { background: #f1f5f9; color: #475569; }
+    .badge-rent { background: #f3e8ff; color: #7e22ce; }
+    .badge-wifi { background: #e0f2fe; color: #0284c7; }
+    .badge-luz { background: #fef9c3; color: #a16207; }
+    .badge-agua { background: #ccfbf1; color: #0f766e; }
+
+    /* Botones */
+    .btn-act { border: 1px solid var(--border); background: white; color: #475569; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.1s; }
+    .btn-act:hover { background: #f8fafc; }
+    .btn-act-pay { background: #059669; color: white; border: none; }
+    .btn-act-pay:hover { background: #047857; }
+    .btn-act-wa { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
+    .btn-file { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; padding: 4px 8px; font-size: 11px; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; border: 1px solid #c7d2fe; cursor: pointer; }
+
+    .mobile-cards-view { display: none; padding: 12px; gap: 10px; }
+    .mob-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .mob-card.alert-card { border: 2px solid var(--warning); background: #fffdf5; }
+    .mob-card.overdue-card { border: 2px solid var(--danger); background: #fff5f5; }
+
+    /* Dashboard */
+    .dashboard-panel { display: none; }
+    .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 14px; }
+    .dash-box { background: white; border-radius: 16px; border: 1px solid #edf2f7; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .dash-box h3 { font-size: 13px; font-weight: 800; color: #334155; margin-bottom: 14px; display: flex; justify-content: space-between; }
+    .dash-col-3 { grid-column: span 3; }
+    .chart-box { display: flex; justify-content: space-between; align-items: flex-end; height: 160px; padding: 10px 4px 0; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; overflow-x: auto; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; cursor: pointer; min-width: 22px; }
+    .chart-bar { width: 80%; background: #e0e7ff; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; }
+    .chart-bar.active-bar { background: #4f46e5; }
+    .progress-track { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; margin: 8px 0; }
+
+    /* Barra Inferior Móvil */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); height: 60px; z-index: 40; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #94a3b8; border: none; background: transparent; cursor: pointer; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item-icon { font-size: 16px; margin-bottom: 2px; }
+
+    .fab-add { display: none; position: fixed; bottom: 70px; right: 16px; width: 50px; height: 50px; border-radius: 25px; background: var(--primary); color: white; border: none; font-size: 26px; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(79,70,229,0.4); z-index: 45; cursor: pointer; }
+
+    /* Modales */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.hidden { display: none !important; }
+    .modal-box { background: white; width: 100%; max-width: 520px; border-radius: 16px; padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+    .form-control:focus { border-color: var(--primary); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .file-hint { font-size: 10px; color: #64748b; margin-top: 3px; display: block; }
+
+    /* Visor de Documentos */
+    .doc-viewer-modal { width: 92%; max-width: 820px; height: 86vh; display: flex; flex-direction: column; padding: 16px; border-radius: 16px; }
+    .doc-viewer-frame { flex: 1; width: 100%; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
+
+    #toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: #1e1b4b; color: white; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; display: none; z-index: 100; box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+
+    @media (max-width: 1024px) and (min-width: 641px) {
+      .sidebar { width: 220px; padding: 16px 12px; }
+      .main-workspace { padding: 18px 20px; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .dash-grid { grid-template-columns: repeat(2, 1fr); }
+      .dash-col-3 { grid-column: span 2; }
+      .mobile-cards-view { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+      .table-responsive { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding-bottom: 75px; }
+      .app-layout { flex-direction: column; }
+      .sidebar { display: none; }
+      .mobile-header { display: flex; }
+      .bottom-nav { display: flex; }
+      .fab-add { display: flex; }
+      .main-workspace { padding: 12px; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+      .kpi-box { padding: 12px 14px; border-radius: 14px; }
+      .kpi-box-val { font-size: 18px; }
+      .table-responsive { display: none; }
+      .mobile-cards-view { display: flex; flex-direction: column; padding: 10px; }
+      .dash-grid { grid-template-columns: 1fr; }
+      .dash-col-3 { grid-column: span 1; }
+      .search-box { width: 100%; }
+      .form-row { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast">Operación exitosa</div>
+
+  <!-- Cabecera Móvil -->
+  <header class="mobile-header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:36px; height:36px; background:#6366f1; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">📄</div>
+      <div>
+        <h1 style="font-size:15px; font-weight:800; line-height:1.2;">Cobros & Rentas</h1>
+        <p style="font-size:10px; color:#c7d2fe;" id="mobDateText"></p>
+      </div>
+    </div>
+    <button onclick="openClientModal()" style="background:#4f46e5; border:none; color:white; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700;">+ Nuevo</button>
+  </header>
+
+  <div class="app-layout">
+    <!-- Barra Lateral -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-brand">
+          <div class="brand-icon">📄</div>
+          <div class="brand-text">
+            <h2>Cobros & Rentas</h2>
+            <p id="todayText"></p>
+          </div>
+        </div>
+
+        <button class="btn-new-record" onclick="openClientModal()">
+          <span>👤+</span> Nuevo Registro
+        </button>
+
+        <div class="nav-label">Módulos</div>
+        <div class="nav-list">
+          <button class="nav-btn active" id="btnSideRecords" onclick="switchMainView('RECORDS')">
+            <span class="nav-btn-icon">📋</span> Contratos y Cobranzas
+          </button>
+          <button class="nav-btn" id="btnSideDashboard" onclick="switchMainView('DASHBOARD')">
+            <span class="nav-btn-icon">📊</span> Dashboard Resumen
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom-cards">
+        <div class="side-card">
+          <div class="side-card-title">Pendiente este mes</div>
+          <div class="side-card-val" style="color: #facc15;" id="sidePendiente">S/ 0.00</div>
+        </div>
+        <div class="side-card">
+          <div class="side-card-title">Total Proyectado Activo</div>
+          <div class="side-card-val" style="color: #4ade80;" id="sideTotal">S/ 0.00</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Área de Trabajo Principal -->
+    <main class="main-workspace">
+      <!-- KPIs -->
+      <section class="kpi-row">
+        <div class="kpi-box">
+          <div>
+            <div class="kpi-box-lbl">Por Cobrar</div>
+            <div class="kpi-box-val" style="color: #d97706;" id="kpiPendiente">S/ 0.00</div>
+          </div>
+          <div class="kpi-box-icon" style="background:#fef3c7; color:#d97706;">🕒</div>
+        </div>
+
+        <div class="kpi-box">
+          <div>
+            <div class="kpi-box-lbl">Cobrado este Mes</div>
+            <div class="kpi-box-val" style="color: #059669;" id="kpiCobrado">S/ 0.00</div>
+          </div>
+          <div class="kpi-box-icon" style="background:#d1fae5; color:#059669;">✓</div>
+        </div>
+
+        <div class="kpi-box">
+          <div>
+            <div class="kpi-box-lbl">Alertas (&le; 2 días)</div>
+            <div class="kpi-box-val" style="color: #ea580c;" id="kpiAlertas">0</div>
+          </div>
+          <div class="kpi-box-icon" style="background:#ffedd5; color:#ea580c;">⚠️</div>
+        </div>
+
+        <div class="kpi-box">
+          <div>
+            <div class="kpi-box-lbl">Contratos Vigentes</div>
+            <div class="kpi-box-val" style="color: #2563eb;" id="kpiActivos">0</div>
+          </div>
+          <div class="kpi-box-icon" style="background:#dbeafe; color:#2563eb;">👤</div>
+        </div>
+      </section>
+
+      <!-- Barra de Filtros -->
+      <section class="filter-bar">
+        <div class="filter-item">
+          <label>Estado Contrato:</label>
+          <select id="filterStatus" class="filter-select" onchange="onStatusFilterChange()">
+            <option value="ACTIVO" selected>✅ Vigentes (No culminados)</option>
+            <option value="CULMINADO">🚫 Culminados</option>
+            <option value="TODOS">Todos los Contratos</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label>Servicio:</label>
+          <select id="filterService" class="filter-select" onchange="render()"></select>
+        </div>
+
+        <div class="filter-item">
+          <label>Año:</label>
+          <select id="filterYear" class="filter-select" onchange="onYearFilterChange()"></select>
+        </div>
+
+        <div class="filter-item">
+          <label>Mes:</label>
+          <select id="filterMonth" class="filter-select" onchange="render()"></select>
+        </div>
+
+        <input type="text" class="search-box" id="searchInput" placeholder="Buscar nombre, DNI o hab..." oninput="render()">
+      </section>
+
+      <!-- Vista 1: Contratos y Cobranzas -->
+      <section class="content-box" id="viewRecords">
+        <div class="content-box-header">
+          <h2 class="content-box-title">CONTRATOS Y SERVICIOS</h2>
+          <span style="font-size:12px; color:var(--text-muted);" id="recordsCountText">Cargando...</span>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>SERVICIO</th>
+                <th>INQUILINO / VECINO</th>
+                <th>UBICACIÓN / REF.</th>
+                <th>CONTRATO</th>
+                <th>DÍA PAGO</th>
+                <th>TARIFA MES</th>
+                <th>ESTADO (MES)</th>
+                <th style="text-align: right;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">Cargando registros...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mobile-cards-view" id="mobileCardsBody"></div>
+      </section>
+
+      <!-- Vista 2: Dashboard Resumen -->
+      <section class="dashboard-panel" id="viewDashboard">
+        <div class="dash-grid">
+          <div class="dash-box dash-col-3">
+            <h3>Evolución Anual de Recaudación (<span id="dashChartYear"></span>)</h3>
+            <div class="chart-box" id="dashAnnualChart"></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:4px;">
+              <span>Ene</span><span>Feb</span><span>Mar</span><span>Abr</span><span>May</span><span>Jun</span>
+              <span>Jul</span><span>Ago</span><span>Set</span><span>Oct</span><span>Nov</span><span>Dic</span>
+            </div>
+          </div>
+
+          <div class="dash-box">
+            <h3>Efectividad del Periodo <span id="dashRatePercent" style="color:var(--success);">0%</span></h3>
+            <div class="progress-track">
+              <div id="dashRateBar" style="background:#059669; height:100%; width:0%; transition:width 0.3s;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:4px;">
+              <span>Recaudado: <b id="dashRatePaid" style="color:var(--success);">S/ 0.00</b></span>
+              <span>Proyectado: <b id="dashRateTotal">S/ 0.00</b></span>
+            </div>
+            <div style="margin-top:12px; padding-top:8px; border-top:1px dashed var(--border); font-size:12px; display:flex; justify-content:space-between;">
+              <span style="color:var(--danger);">Impago en el periodo:</span>
+              <b id="dashOverdueAmount" style="color:var(--danger);">S/ 0.00</b>
+            </div>
+          </div>
+
+          <div class="dash-box">
+            <h3>Ingresos por Servicio</h3>
+            <div style="margin-top:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>🏠 Alquileres</span>
+                <b id="dashRentIncome">S/ 0.00</b>
+              </div>
+              <div class="progress-track"><div id="barRent" style="background:#7e22ce; height:100%; width:0%;"></div></div>
+            </div>
+            <div style="margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>📶 Wi-Fi</span>
+                <b id="dashWifiIncome">S/ 0.00</b>
+              </div>
+              <div class="progress-track"><div id="barWifi" style="background:#0284c7; height:100%; width:0%;"></div></div>
+            </div>
+            <div style="margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>⚡ Luz</span>
+                <b id="dashLuzIncome">S/ 0.00</b>
+              </div>
+              <div class="progress-track"><div id="barLuz" style="background:#eab308; height:100%; width:0%;"></div></div>
+            </div>
+            <div style="margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span>💧 Agua</span>
+                <b id="dashAguaIncome">S/ 0.00</b>
+              </div>
+              <div class="progress-track"><div id="barAgua" style="background:#0d9488; height:100%; width:0%;"></div></div>
+            </div>
+          </div>
+
+          <div class="dash-box">
+            <h3>Canales de Pago</h3>
+            <div id="dashMethodsContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+
+          <div class="dash-box dash-col-3">
+            <h3>Cobros Registrados en este Periodo</h3>
+            <div id="dashPaymentsTableList" style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <button class="fab-add" onclick="openClientModal()">+</button>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="mobNavRecords" onclick="switchMainView('RECORDS')">
+      <span class="nav-item-icon">📋</span>
+      <span>Contratos</span>
+    </button>
+    <button class="nav-item" id="mobNavDashboard" onclick="switchMainView('DASHBOARD')">
+      <span class="nav-item-icon">📊</span>
+      <span>Resumen</span>
+    </button>
+  </nav>
+
+  <!-- Modal: Inquilino -->
+  <div id="clientModal" class="modal-overlay hidden" onclick="if(event.target === this) closeClientModal()">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 style="font-size: 15px; font-weight: 800;" id="modalTitle">Nuevo Inquilino / Servicio</h2>
+        <button style="border:none; background:none; font-size:20px; color:#94a3b8; cursor:pointer;" onclick="closeClientModal()">&times;</button>
+      </div>
+
+      <input type="hidden" id="formId">
+
+      <div class="form-group">
+        <label>Tipo de Servicio *</label>
+        <select class="form-control" id="formType">
+          <option value="ALQUILER">🏠 Alquiler (Habitación / Departamento)</option>
+          <option value="WIFI">📶 Servicio de Wi-Fi</option>
+          <option value="LUZ">⚡ Servicio de Luz (Energía Eléctrica)</option>
+          <option value="AGUA">💧 Servicio de Agua Potable</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre Completo *</label>
+          <input type="text" class="form-control" id="formName" placeholder="Ej. Roberto Sánchez">
+        </div>
+        <div class="form-group">
+          <label>DNI / RUC *</label>
+          <input type="text" class="form-control" id="formDni" placeholder="8 o 11 dígitos">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ubicación / Ref. *</label>
+          <input type="text" class="form-control" id="formLocation" placeholder="Ej. Hab. 201">
+        </div>
+        <div class="form-group">
+          <label>Teléfono (WhatsApp)</label>
+          <input type="tel" class="form-control" id="formPhone" placeholder="987654321">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Día de Cobro (1-31) *</label>
+          <input type="number" min="1" max="31" class="form-control" id="formPayDay" placeholder="Ej. 15">
+        </div>
+        <div class="form-group">
+          <label>Monto Mensual (S/) *</label>
+          <input type="text" inputmode="decimal" class="form-control" id="formAmount" placeholder="150.00">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Subir Contrato (PDF o Foto)</label>
+        <input type="file" class="form-control" id="formContractFile" accept="application/pdf,image/*">
+        <span class="file-hint">Foto o PDF del contrato firmado.</span>
+        <div id="contractPreviewLink" style="margin-top: 6px;"></div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button class="btn-act" style="flex:1; padding:10px;" onclick="closeClientModal()">Cancelar</button>
+        <button id="btnSaveClient" class="btn-act btn-act-pay" style="flex:1; padding:10px; font-size:12px;" onclick="saveClient()">Guardar Registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Pagos -->
+  <div id="paymentModal" class="modal-overlay hidden" onclick="if(event.target === this) closePaymentModal()">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 style="font-size: 15px; font-weight: 800;" id="paymentModalTitle">Registrar Cobro</h2>
+        <button style="border:none; background:none; font-size:20px; color:#94a3b8; cursor:pointer;" onclick="closePaymentModal()">&times;</button>
+      </div>
+
+      <input type="hidden" id="payId">
+      <input type="hidden" id="payEditPid">
+      <p style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text);" id="payClientDesc"></p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Monto Cobrado (S/) *</label>
+          <input type="text" inputmode="decimal" class="form-control" id="payAmount">
+        </div>
+        <div class="form-group">
+          <label>Mes que Cancela *</label>
+          <input type="month" class="form-control" id="payMonth">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de Pago *</label>
+          <input type="date" class="form-control" id="payDate">
+        </div>
+        <div class="form-group">
+          <label>Medio de Pago</label>
+          <select class="form-control" id="payMethod">
+            <option value="Yape">Yape</option>
+            <option value="Plin">Plin</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Efectivo">Efectivo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Comprobante de Abono (Foto / Voucher / PDF)</label>
+        <input type="file" class="form-control" id="payReceiptFile" accept="image/*,application/pdf">
+        <span class="file-hint">Foto o captura de Yape, Plin o comprobante bancario.</span>
+        <div id="payReceiptPreviewLink" style="margin-top: 5px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Constancia Emitida (Boleta / Factura / Recibo)</label>
+        <input type="file" class="form-control" id="payInvoiceFile" accept="application/pdf,image/*">
+        <span class="file-hint">Foto o PDF entregado al inquilino.</span>
+        <div id="payInvoicePreviewLink" style="margin-top: 5px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Nota / N° Operación (Opcional)</label>
+        <input type="text" class="form-control" id="payNote" placeholder="Ej. Operación 104928 - Cancelado puntual">
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button class="btn-act" style="flex:1; padding:10px;" onclick="closePaymentModal()">Cancelar</button>
+        <button id="btnSavePayment" class="btn-act btn-act-pay" style="flex:1; padding:10px; font-size:12px;" onclick="savePayment()">Confirmar Cobro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Historial -->
+  <div id="historyModal" class="modal-overlay hidden" onclick="if(event.target === this) closeHistoryModal()">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h2 style="font-size: 15px; font-weight: 800;">Historial de Cobros</h2>
+          <p style="font-size: 11px; color: var(--text-muted);" id="histClientDesc"></p>
+        </div>
+        <button style="border:none; background:none; font-size:20px; color:#94a3b8; cursor:pointer;" onclick="closeHistoryModal()">&times;</button>
+      </div>
+
+      <div id="historyItems" style="max-height: 340px; overflow-y: auto; margin-bottom: 14px; display:flex; flex-direction:column; gap:8px;"></div>
+      <button class="btn-act" style="width:100%; padding:9px;" onclick="closeHistoryModal()">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiHWdy6ibdqIJPZ1Jm6m39QzQuYyWGQvK9btws0HZ-JutM2Yvz1Ojt0Sjgi0ZSX_PR/exec';
+
+    var clients = [];
+    var currentMainView = 'RECORDS';
+    var tempContractDoc = null;
+    var tempReceiptDoc = null;
+    var tempInvoiceDoc = null;
+    var currentHistoryCid = null;
+
+    var monthNames = {
+      '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',
+      '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',
+      '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'
+    };
+
+    function safeStr(val) {
+      if (val === null || val === undefined) return '';
+      return String(val).trim();
+    }
+
+    // Normaliza cualquier URL de Drive para abrir directo en el visor nativo sin bloqueos de iframe
+    function getDirectDriveUrl(url) {
+      var raw = safeStr(url);
+      if (!raw) return '';
+      if (raw.indexOf('drive.google.com') !== -1) {
+        var match = raw.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          return 'https://drive.google.com/file/d/' + match[1] + '/view?usp=drivesdk';
+        }
+      }
+      return raw;
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 2600);
+    }
+
+    function getNow() {
+      var d = new Date();
+      var yr = d.getFullYear();
+      var mo = String(d.getMonth() + 1).padStart(2, '0');
+      var da = String(d.getDate()).padStart(2, '0');
+
+      return {
+        year: String(yr),
+        month: mo,
+        fullDate: yr + '-' + mo + '-' + da,
+        monthKey: yr + '-' + mo,
+        day: d.getDate(),
+        totalDays: new Date(yr, d.getMonth() + 1, 0).getDate()
+      };
+    }
+
+    function fileToBase64(file, callback) {
+      if (!file) { callback(null); return; }
+      var reader = new FileReader();
+      reader.onload = function(e) { callback(e.target.result); };
+      reader.onerror = function() { callback(null); };
+      reader.readAsDataURL(file);
+    }
+
+    // Comunicación segura con el backend que evita bloqueos CORS en celulares
+    function callBackend(action, payload) {
+      return new Promise(function(resolve, reject) {
+        // 1. Si se ejecuta dentro del entorno nativo de Google Apps Script
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          if (action === 'loadClientsData') {
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).loadClientsData();
+          } else if (action === 'saveClientRecord') {
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).saveClientRecord(payload);
+          } else if (action === 'deleteClientRecord') {
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).deleteClientRecord(payload);
+          } else if (action === 'uploadBase64ToDrive') {
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).uploadBase64ToDrive(payload.fileName, payload.base64);
+          }
+          return;
+        }
+
+        // 2. Si se ejecuta desde un celular o navegador externo
+        if (action === 'loadClientsData') {
+          fetch(APPS_SCRIPT_URL + '?action=loadClientsData&nocache=' + Date.now())
+            .then(function(res) { return res.json(); })
+            .then(resolve)
+            .catch(function(err) {
+              // Intento secundario vía POST simple text/plain
+              fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: action, payload: payload })
+              })
+              .then(function(res) { return res.json(); })
+              .then(resolve)
+              .catch(reject);
+            });
+        } else {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: action, payload: payload })
+          })
+          .then(function(res) { return res.json(); })
+          .then(resolve)
+          .catch(reject);
+        }
+      });
+    }
+
+    function uploadToDrivePromise(fileName, base64) {
+      if (!base64) return Promise.resolve(null);
+      return callBackend('uploadBase64ToDrive', { fileName: fileName, base64: base64 });
+    }
+
+    function loadData() {
+      showToast("Cargando base de datos...");
+      callBackend('loadClientsData')
+        .then(function(serverClients) {
+          clients = Array.isArray(serverClients) ? serverClients : [];
+          initCorrelatedFilters();
+          render();
+          showToast("Datos sincronizados");
+        })
+        .catch(function(err) {
+          console.warn("No se pudo conectar al servidor:", err);
+          showToast("Modo sin conexión");
+          // Si falla la red, permite usar la app vacía o con localStorage
+          try {
+            var local = localStorage.getItem('control_inquilinos_cache');
+            if (local) clients = JSON.parse(local);
+          } catch(e) {}
+          initCorrelatedFilters();
+          render();
+        });
+    }
+
+    function persistClient(client) {
+      try {
+        localStorage.setItem('control_inquilinos_cache', JSON.stringify(clients));
+      } catch(e) {}
+
+      callBackend('saveClientRecord', client)
+        .catch(function(err) {
+          console.error("Error guardando cliente:", err);
+          showToast("Error al sincronizar con Google Sheets");
+        });
+    }
+
+    function initCorrelatedFilters() {
+      var now = getNow();
+      var filterStatus = document.getElementById('filterStatus');
+      if (filterStatus) filterStatus.value = 'ACTIVO';
+      updateServiceFilterOptions();
+      updateYearFilterOptions(now.year);
+      updateMonthFilterOptions(now.month);
+    }
+
+    function onStatusFilterChange() {
+      updateServiceFilterOptions();
+      updateYearFilterOptions();
+      updateMonthFilterOptions();
+      render();
+    }
+
+    function onYearFilterChange() {
+      updateMonthFilterOptions();
+      render();
+    }
+
+    function updateServiceFilterOptions() {
+      var statusSelect = document.getElementById('filterStatus');
+      var statusVal = statusSelect ? statusSelect.value : 'ACTIVO';
+      var serviceSelect = document.getElementById('filterService');
+      if (!serviceSelect) return;
+      var prevSelected = serviceSelect.value;
+
+      var availableTypes = new Set();
+      clients.forEach(function(c) {
+        var matchStatus = (statusVal === 'TODOS') || 
+                          (statusVal === 'ACTIVO' && c.status !== 'CULMINADO') ||
+                          (statusVal === 'CULMINADO' && c.status === 'CULMINADO');
+        if (matchStatus && c.type) availableTypes.add(c.type);
+      });
+
+      serviceSelect.innerHTML = '<option value="TODOS">Todos los Servicios</option>';
+      var labels = { 'ALQUILER': '🏠 Alquileres', 'WIFI': '📶 Wi-Fi', 'LUZ': '⚡ Luz', 'AGUA': '💧 Agua' };
+
+      availableTypes.forEach(function(type) {
+        var opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = labels[type] || type;
+        if (type === prevSelected) opt.selected = true;
+        serviceSelect.appendChild(opt);
+      });
+    }
+
+    function updateYearFilterOptions(defaultYear) {
+      var statusSelect = document.getElementById('filterStatus');
+      var serviceSelect = document.getElementById('filterService');
+      var yearSelect = document.getElementById('filterYear');
+      if (!yearSelect) return;
+
+      var statusVal = statusSelect ? statusSelect.value : 'ACTIVO';
+      var serviceVal = serviceSelect ? serviceSelect.value : 'TODOS';
+      var now = getNow();
+      var prevSelected = defaultYear || yearSelect.value || now.year;
+      var availableYears = new Set([now.year]);
+
+      clients.forEach(function(c) {
+        var matchStatus = (statusVal === 'TODOS') || 
+                          (statusVal === 'ACTIVO' && c.status !== 'CULMINADO') ||
+                          (statusVal === 'CULMINADO' && c.status === 'CULMINADO');
+        var matchService = (serviceVal === 'TODOS') || (c.type === serviceVal);
+
+        if (matchStatus && matchService) {
+          (c.payments || []).forEach(function(p) {
+            if (p.monthKey) {
+              var yr = p.monthKey.split('-')[0];
+              if (yr) availableYears.add(yr);
+            }
+          });
+        }
+      });
+
+      var sortedYears = Array.from(availableYears).sort(function(a, b) { return b - a; });
+      yearSelect.innerHTML = '<option value="TODOS">Todos los Años</option>';
+
+      sortedYears.forEach(function(yr) {
+        var opt = document.createElement('option');
+        opt.value = yr;
+        opt.textContent = yr;
+        if (yr === prevSelected) opt.selected = true;
+        yearSelect.appendChild(opt);
+      });
+    }
+
+    function updateMonthFilterOptions(defaultMonth) {
+      var monthSelect = document.getElementById('filterMonth');
+      if (!monthSelect) return;
+      var now = getNow();
+      var prevSelected = defaultMonth || monthSelect.value || now.month;
+
+      monthSelect.innerHTML = '<option value="TODOS">Todos los Meses</option>';
+      for (var k in monthNames) {
+        var opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = monthNames[k];
+        if (k === prevSelected) opt.selected = true;
+        monthSelect.appendChild(opt);
+      }
+    }
+
+    function switchMainView(view) {
+      currentMainView = view;
+      document.getElementById('btnSideRecords').classList.toggle('active', view === 'RECORDS');
+      document.getElementById('btnSideDashboard').classList.toggle('active', view === 'DASHBOARD');
+      document.getElementById('mobNavRecords').classList.toggle('active', view === 'RECORDS');
+      document.getElementById('mobNavDashboard').classList.toggle('active', view === 'DASHBOARD');
+
+      document.getElementById('viewRecords').style.display = (view === 'RECORDS') ? 'block' : 'none';
+      document.getElementById('viewDashboard').style.display = (view === 'DASHBOARD') ? 'block' : 'none';
+      var fab = document.querySelector('.fab-add');
+      if (fab) fab.style.display = (view === 'RECORDS') ? 'flex' : 'none';
+
+      if (view === 'DASHBOARD') renderDashboard();
+      else render();
+    }
+
+    function getStatus(c, targetMonthKey) {
+      if (c.status === 'CULMINADO') {
+        return { label: 'Culminado', badge: 'badge-term', isPaid: true, alert: false };
+      }
+      var now = getNow();
+      var effectiveMonthKey = targetMonthKey || now.monthKey;
+      var payments = c.payments || [];
+      var hasPaid = payments.some(function(p) { return p.monthKey === effectiveMonthKey; });
+
+      if (hasPaid) return { label: '✓ Al día', badge: 'badge-paid', isPaid: true, alert: false };
+
+      var effectiveDay = Math.min(c.payDay || 1, now.totalDays);
+      var diff = effectiveDay - now.day;
+
+      if (diff < 0) {
+        return { label: 'Vencido (' + Math.abs(diff) + 'd)', badge: 'badge-overdue', isPaid: false, alert: true, overdue: true, diff: diff };
+      } else if (diff <= 2) {
+        var txt = (diff === 0) ? '🔔 Vence HOY' : '⚠️ Vence en ' + diff + 'd';
+        return { label: txt, badge: 'badge-due', isPaid: false, alert: true, overdue: false, diff: diff };
+      } else {
+        return { label: 'Día ' + c.payDay + ' (' + diff + 'd)', badge: 'badge-due', isPaid: false, alert: false, overdue: false, diff: diff };
+      }
+    }
+
+    function getServiceBadge(type) {
+      if (type === 'WIFI') return '<span class="badge badge-wifi">📶 Wi-Fi</span>';
+      if (type === 'LUZ') return '<span class="badge badge-luz">⚡ Luz</span>';
+      if (type === 'AGUA') return '<span class="badge badge-agua">💧 Agua</span>';
+      return '<span class="badge badge-rent">🏠 Alquiler</span>';
+    }
+
+    function esc(s) {
+      return safeStr(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function render() {
+      var tableBody = document.getElementById('tableBody');
+      var mobileContainer = document.getElementById('mobileCardsBody');
+      var searchInput = document.getElementById('searchInput');
+      var searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+      var statusFilter = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'ACTIVO';
+      var serviceFilter = document.getElementById('filterService') ? document.getElementById('filterService').value : 'TODOS';
+      var yearFilter = document.getElementById('filterYear') ? document.getElementById('filterYear').value : 'TODOS';
+      var monthFilter = document.getElementById('filterMonth') ? document.getElementById('filterMonth').value : 'TODOS';
+
+      if (!tableBody || !mobileContainer) return;
+
+      tableBody.innerHTML = '';
+      mobileContainer.innerHTML = '';
+
+      var now = getNow();
+      var activeYear = (yearFilter !== 'TODOS') ? yearFilter : now.year;
+      var activeMonth = (monthFilter !== 'TODOS') ? monthFilter : now.month;
+      var selectedMonthKey = activeYear + '-' + activeMonth;
+
+      var totPending = 0, totPaid = 0, totAlerts = 0, totActives = 0, totProjected = 0;
+
+      clients.forEach(function(c) {
+        if (c.status !== 'CULMINADO') {
+          totActives++;
+          var s = getStatus(c, now.monthKey);
+          var m = parseFloat(c.amount) || 0;
+          totProjected += m;
+          if (s.isPaid) totPaid += m;
+          else {
+            totPending += m;
+            if (s.alert) totAlerts++;
+          }
+        }
+      });
+
+      document.getElementById('kpiPendiente').textContent = 'S/ ' + totPending.toFixed(2);
+      document.getElementById('kpiCobrado').textContent = 'S/ ' + totPaid.toFixed(2);
+      document.getElementById('kpiAlertas').textContent = totAlerts;
+      document.getElementById('kpiActivos').textContent = totActives;
+      document.getElementById('sidePendiente').textContent = 'S/ ' + totPending.toFixed(2);
+      document.getElementById('sideTotal').textContent = 'S/ ' + totProjected.toFixed(2);
+
+      var filtered = clients.filter(function(c) {
+        var matchStatus = (statusFilter === 'TODOS') ||
+                          (statusFilter === 'ACTIVO' && c.status !== 'CULMINADO') ||
+                          (statusFilter === 'CULMINADO' && c.status === 'CULMINADO');
+        if (!matchStatus) return false;
+
+        var matchService = (serviceFilter === 'TODOS') || (c.type === serviceFilter);
+        if (!matchService) return false;
+
+        if (searchVal) {
+          var dniVal = safeStr(c.dni).toLowerCase();
+          var matchText = safeStr(c.name).toLowerCase().includes(searchVal) || 
+                          safeStr(c.location).toLowerCase().includes(searchVal) || 
+                          dniVal.includes(searchVal);
+          if (!matchText) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById('recordsCountText').textContent = filtered.length + ' registro(s) encontrado(s)';
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px; color:#94a3b8;">No se encontraron contratos con estos filtros.</td></tr>';
+        mobileContainer.innerHTML = '<div style="text-align:center; padding: 30px; color:#94a3b8; font-size:13px; grid-column:1/-1;">No se encontraron contratos con estos filtros.</div>';
+        return;
+      }
+
+      filtered.forEach(function(c) {
+        var st = getStatus(c, selectedMonthKey);
+        var svcBadge = getServiceBadge(c.type);
+        var directContractUrl = getDirectDriveUrl(c.contractDoc);
+
+        var contractHtml = directContractUrl 
+          ? '<a href="' + directContractUrl + '" target="_blank" rel="noopener noreferrer" class="btn-file">📄 Ver Contrato</a>'
+          : '<span style="color:#94a3b8; font-size:11px;">Sin adjunto</span>';
+
+        var tr = document.createElement('tr');
+        tr.innerHTML = 
+          '<td>' + svcBadge + '</td>' +
+          '<td><b>' + esc(c.name) + '</b><div style="font-size:11px; color:var(--text-muted);">' + (c.dni ? 'DNI: ' + esc(c.dni) : '') + (c.phone ? ' • ' + esc(c.phone) : '') + '</div></td>' +
+          '<td>' + esc(c.location) + '</td>' +
+          '<td>' + contractHtml + '</td>' +
+          '<td><span style="background:#f1f5f9; padding:3px 7px; border-radius:6px; font-weight:700;">Día ' + (c.payDay || 1) + '</span></td>' +
+          '<td><b>S/ ' + Number(c.amount || 0).toFixed(2) + '</b></td>' +
+          '<td><span class="badge ' + st.badge + '">' + st.label + '</span></td>' +
+          '<td style="text-align: right; white-space: nowrap;">' +
+            (c.status !== 'CULMINADO' ? '<button class="btn-act btn-act-pay" onclick="openPaymentModal(\'' + c.id + '\')">Cobrar</button> ' : '') +
+            '<button class="btn-act" onclick="openHistoryModal(\'' + c.id + '\')">Historial</button> ' +
+            (c.phone && c.status !== 'CULMINADO' ? '<button class="btn-act btn-act-wa" onclick="sendWA(\'' + c.id + '\')">WhatsApp</button> ' : '') +
+            '<button class="btn-act" onclick="openClientModal(\'' + c.id + '\')">✏️</button> ' +
+            (c.status !== 'CULMINADO' 
+              ? '<button class="btn-act" style="color:var(--warning);" title="Culminar" onclick="terminate(\'' + c.id + '\')">Culminar</button> ' 
+              : '<button class="btn-act" style="color:var(--primary);" title="Reactivar" onclick="reactivate(\'' + c.id + '\')">↻</button> ') +
+            '<button class="btn-act" style="color:var(--danger);" onclick="deleteClient(\'' + c.id + '\')">🗑</button>' +
+          '</td>';
+
+        tableBody.appendChild(tr);
+
+        var card = document.createElement('div');
+        card.className = 'mob-card' + (st.alert && !st.isPaid ? (st.overdue ? ' overdue-card' : ' alert-card') : '');
+        card.innerHTML = 
+          '<div style="display:flex; justify-content:space-between; margin-bottom:6px;">' +
+            '<div>' +
+              svcBadge + ' ' +
+              '<b>' + esc(c.name) + '</b>' +
+              '<div style="font-size:11px; color:#64748b; margin-top:2px;">' + (c.dni ? 'DNI: ' + esc(c.dni) + ' • ' : '') + esc(c.location) + '</div>' +
+            '</div>' +
+            '<span class="badge ' + st.badge + '">' + st.label + '</span>' +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 10px; border-radius:6px; font-size:12px; margin:8px 0;">' +
+            '<div>Tarifa: <b>S/ ' + Number(c.amount || 0).toFixed(2) + '</b><br><small style="color:#64748b;">Día ' + (c.payDay || 1) + ' de cada mes</small></div>' +
+            '<div>' + (directContractUrl ? '<a href="' + directContractUrl + '" target="_blank" rel="noopener noreferrer" class="btn-file">📄 Contrato</a>' : '') + '</div>' +
+          '</div>' +
+          '<div style="display:flex; gap:6px; flex-wrap:wrap;">' +
+            (c.status !== 'CULMINADO' ? '<button class="btn-act btn-act-pay" style="flex:1;" onclick="openPaymentModal(\'' + c.id + '\')">Cobrar</button>' : '') +
+            '<button class="btn-act" style="flex:1;" onclick="openHistoryModal(\'' + c.id + '\')">Historial</button>' +
+            (c.phone && c.status !== 'CULMINADO' ? '<button class="btn-act btn-act-wa" onclick="sendWA(\'' + c.id + '\')">WhatsApp</button>' : '') +
+            '<button class="btn-act" onclick="openClientModal(\'' + c.id + '\')">✏️</button>' +
+            '<button class="btn-act" style="color:var(--danger);" onclick="deleteClient(\'' + c.id + '\')">🗑</button>' +
+          '</div>';
+
+        mobileContainer.appendChild(card);
+      });
+    }
+
+    function renderDashboard() {
+      var selectedYear = document.getElementById('filterYear') ? document.getElementById('filterYear').value : 'TODOS';
+      var selectedMonth = document.getElementById('filterMonth') ? document.getElementById('filterMonth').value : 'TODOS';
+      var now = getNow();
+
+      if (selectedYear === 'TODOS') selectedYear = now.year;
+      document.getElementById('dashChartYear').textContent = selectedYear;
+
+      var monthlyTotals = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      var maxMonthVal = 1;
+      var totalCollected = 0;
+      var rentIncome = 0;
+      var wifiIncome = 0;
+      var luzIncome = 0;
+      var aguaIncome = 0;
+      var methods = { 'Yape': 0, 'Plin': 0, 'Transferencia': 0, 'Efectivo': 0 };
+      var periodPaymentsList = [];
+
+      clients.forEach(function(c) {
+        var payments = c.payments || [];
+        payments.forEach(function(p) {
+          if (!p.monthKey) return;
+          var parts = p.monthKey.split('-');
+          var pYear = parts[0];
+          var pMonth = parts[1];
+          var pAmt = parseFloat(p.amount) || 0;
+
+          if (pYear === selectedYear) {
+            var mIdx = parseInt(pMonth, 10) - 1;
+            if (mIdx >= 0 && mIdx < 12) {
+              monthlyTotals[mIdx] += pAmt;
+              if (monthlyTotals[mIdx] > maxMonthVal) maxMonthVal = monthlyTotals[mIdx];
+            }
+          }
+
+          var matches = (pYear === selectedYear) && (selectedMonth === 'TODOS' || pMonth === selectedMonth);
+          if (matches) {
+            totalCollected += pAmt;
+            if (c.type === 'ALQUILER') rentIncome += pAmt;
+            else if (c.type === 'WIFI') wifiIncome += pAmt;
+            else if (c.type === 'LUZ') luzIncome += pAmt;
+            else if (c.type === 'AGUA') aguaIncome += pAmt;
+
+            var mKey = p.method || 'Efectivo';
+            methods[mKey] = (methods[mKey] || 0) + pAmt;
+
+            periodPaymentsList.push({
+              clientName: c.name,
+              clientType: c.type,
+              amount: pAmt,
+              date: p.payDate,
+              month: p.monthKey,
+              method: p.method,
+              receiptDoc: p.receiptDoc,
+              invoiceDoc: p.invoiceDoc,
+              note: p.note
+            });
+          }
+        });
+      });
+
+      var chartBox = document.getElementById('dashAnnualChart');
+      chartBox.innerHTML = '';
+
+      monthlyTotals.forEach(function(val, idx) {
+        var mStr = String(idx + 1).padStart(2, '0');
+        var heightPct = maxMonthVal > 0 ? Math.round((val / maxMonthVal) * 90) : 4;
+        if (heightPct < 4) heightPct = 4;
+
+        var isCurrent = (selectedYear === String(now.year)) && (mStr === now.month);
+        var isSelected = (selectedMonth === mStr);
+
+        var wrap = document.createElement('div');
+        wrap.className = 'chart-bar-wrap';
+        wrap.title = monthNames[mStr] + ': S/ ' + val.toFixed(2);
+        wrap.onclick = function() {
+          var fMonth = document.getElementById('filterMonth');
+          if (fMonth) fMonth.value = mStr;
+          renderDashboard();
+        };
+
+        wrap.innerHTML = 
+          (val > 0 ? '<div class="chart-tooltip">' + Math.round(val) + '</div>' : '') +
+          '<div class="chart-bar ' + (isSelected || isCurrent ? 'active-bar' : '') + '" style="height:' + heightPct + '%;"></div>';
+
+        chartBox.appendChild(wrap);
+      });
+
+      var monthlyFee = 0;
+      clients.forEach(function(c) {
+        if (c.status !== 'CULMINADO') monthlyFee += parseFloat(c.amount) || 0;
+      });
+
+      var periodExpected = (selectedMonth === 'TODOS') ? (monthlyFee * 12) : monthlyFee;
+      var totalOverdue = 0;
+
+      if (selectedMonth !== 'TODOS') {
+        var targetMonthKey = selectedYear + '-' + selectedMonth;
+        clients.forEach(function(c) {
+          if (c.status !== 'CULMINADO') {
+            var hasPaid = (c.payments || []).some(function(p) { return p.monthKey === targetMonthKey; });
+            if (!hasPaid) totalOverdue += parseFloat(c.amount) || 0;
+          }
+        });
+      }
+
+      var rate = periodExpected > 0 ? Math.round((totalCollected / periodExpected) * 100) : 0;
+      if (rate > 100) rate = 100;
+
+      document.getElementById('dashRatePercent').textContent = rate + '%';
+      document.getElementById('dashRateBar').style.width = rate + '%';
+      document.getElementById('dashRatePaid').textContent = 'S/ ' + totalCollected.toFixed(2);
+      document.getElementById('dashRateTotal').textContent = 'S/ ' + periodExpected.toFixed(2);
+      document.getElementById('dashOverdueAmount').textContent = 'S/ ' + totalOverdue.toFixed(2);
+
+      document.getElementById('dashRentIncome').textContent = 'S/ ' + rentIncome.toFixed(2);
+      document.getElementById('dashWifiIncome').textContent = 'S/ ' + wifiIncome.toFixed(2);
+      document.getElementById('dashLuzIncome').textContent = 'S/ ' + luzIncome.toFixed(2);
+      document.getElementById('dashAguaIncome').textContent = 'S/ ' + aguaIncome.toFixed(2);
+
+      var totSvc = rentIncome + wifiIncome + luzIncome + aguaIncome;
+      document.getElementById('barRent').style.width = (totSvc > 0 ? (rentIncome / totSvc) * 100 : 0) + '%';
+      document.getElementById('barWifi').style.width = (totSvc > 0 ? (wifiIncome / totSvc) * 100 : 0) + '%';
+      document.getElementById('barLuz').style.width = (totSvc > 0 ? (luzIncome / totSvc) * 100 : 0) + '%';
+      document.getElementById('barAgua').style.width = (totSvc > 0 ? (aguaIncome / totSvc) * 100 : 0) + '%';
+
+      var mContainer = document.getElementById('dashMethodsContainer');
+      mContainer.innerHTML = '';
+      for (var k in methods) {
+        var mAmt = methods[k];
+        var mPct = totalCollected > 0 ? (mAmt / totalCollected) * 100 : 0;
+        var row = document.createElement('div');
+        row.innerHTML = 
+          '<div style="display:flex; justify-content:space-between; font-size:12px;">' +
+            '<span>' + k + '</span>' +
+            '<b>S/ ' + mAmt.toFixed(2) + ' <span style="font-weight:400; color:var(--text-muted); font-size:10px;">(' + Math.round(mPct) + '%)</span></b>' +
+          '</div>' +
+          '<div class="progress-track" style="margin:4px 0 8px;"><div style="background:var(--primary); height:100%; width:' + mPct + '%;"></div></div>';
+        mContainer.appendChild(row);
+      }
+
+      var pListBox = document.getElementById('dashPaymentsTableList');
+      pListBox.innerHTML = '';
+      periodPaymentsList.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+
+      if (periodPaymentsList.length === 0) {
+        pListBox.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px;">No se registraron cobros en el periodo filtrado.</div>';
+      } else {
+        periodPaymentsList.forEach(function(item) {
+          var typeName = 'Alquiler';
+          if (item.clientType === 'WIFI') typeName = 'Wi-Fi';
+          else if (item.clientType === 'LUZ') typeName = 'Luz';
+          else if (item.clientType === 'AGUA') typeName = 'Agua';
+
+          var docsHtml = '';
+          var safeR = getDirectDriveUrl(item.receiptDoc);
+          var safeI = getDirectDriveUrl(item.invoiceDoc);
+
+          if (safeR) {
+            docsHtml += '<a href="' + safeR + '" target="_blank" rel="noopener noreferrer" class="btn-file" style="margin-left:4px;">🧾 Voucher</a>';
+          }
+          if (safeI) {
+            docsHtml += '<a href="' + safeI + '" target="_blank" rel="noopener noreferrer" class="btn-file" style="margin-left:4px;">📄 Boleta</a>';
+          }
+
+          var el = document.createElement('div');
+          el.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:8px 12px; border-radius:8px;";
+          el.innerHTML = 
+            '<div>' +
+              '<b>' + esc(item.clientName) + '</b> <span style="color:var(--text-muted); font-size:11px;">(' + typeName + ')</span>' +
+              '<div style="font-size:11px; color:var(--text-muted);">Mes cancelado: <b>' + item.month + '</b> • Fecha: ' + item.date + (item.note ? ' - "' + esc(item.note) + '"' : '') + '</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+              '<b style="color:var(--success);">S/ ' + item.amount.toFixed(2) + '</b>' +
+              '<div style="font-size:10px; color:var(--text-muted); margin-bottom:3px;">' + item.method + '</div>' +
+              '<div>' + docsHtml + '</div>' +
+            '</div>';
+          pListBox.appendChild(el);
+        });
+      }
+    }
+
+    function openClientModal(id) {
+      document.getElementById('formContractFile').value = '';
+      var previewBox = document.getElementById('contractPreviewLink');
+      previewBox.innerHTML = '';
+      tempContractDoc = null;
+
+      if (id) {
+        var c = clients.find(function(x) { return x.id === id; });
+        if (!c) return;
+        document.getElementById('formId').value = c.id;
+        document.getElementById('formType').value = c.type;
+        document.getElementById('formName').value = c.name;
+        document.getElementById('formDni').value = c.dni || '';
+        document.getElementById('formLocation').value = c.location;
+        document.getElementById('formPhone').value = c.phone || '';
+        document.getElementById('formPayDay').value = c.payDay || 1;
+        document.getElementById('formAmount').value = Number(c.amount || 0).toFixed(2);
+        document.getElementById('modalTitle').textContent = 'Editar Registro';
+
+        var safeContract = getDirectDriveUrl(c.contractDoc);
+        if (safeContract) {
+          tempContractDoc = safeContract;
+          previewBox.innerHTML = '<a href="' + safeContract + '" target="_blank" rel="noopener noreferrer" class="btn-file">📄 Ver Contrato Actual</a>';
+        }
+      } else {
+        document.getElementById('formId').value = '';
+        document.getElementById('formName').value = '';
+        document.getElementById('formDni').value = '';
+        document.getElementById('formLocation').value = '';
+        document.getElementById('formPhone').value = '';
+        document.getElementById('formPayDay').value = '';
+        document.getElementById('formAmount').value = '';
+        document.getElementById('formType').value = 'ALQUILER';
+        document.getElementById('modalTitle').textContent = 'Nuevo Inquilino / Servicio';
+      }
+      document.getElementById('clientModal').classList.remove('hidden');
+    }
+
+    function closeClientModal() {
+      document.getElementById('clientModal').classList.add('hidden');
+    }
+
+    function saveClient() {
+      var id = document.getElementById('formId').value.trim();
+      var type = document.getElementById('formType').value;
+      var name = document.getElementById('formName').value.trim();
+      var dni = document.getElementById('formDni').value.trim();
+      var loc = document.getElementById('formLocation').value.trim();
+      var phone = document.getElementById('formPhone').value.trim();
+      var day = parseInt(document.getElementById('formPayDay').value.trim(), 10);
+      var amt = parseFloat(document.getElementById('formAmount').value.trim().replace(',', '.'));
+      var fileInput = document.getElementById('formContractFile');
+
+      if (!name) { alert("Ingresa el nombre completo."); return; }
+      if (!loc) { alert("Ingresa la habitación o referencia."); return; }
+      if (isNaN(day) || day < 1 || day > 31) { alert("Día inválido (1 al 31)."); return; }
+      if (isNaN(amt) || amt <= 0) { alert("Monto mensual inválido."); return; }
+
+      var btn = document.getElementById('btnSaveClient');
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+
+      var file = fileInput.files ? fileInput.files[0] : null;
+
+      fileToBase64(file, function(base64) {
+        var uploadPromise = base64 ? uploadToDrivePromise('Contrato_' + name.replace(/\s+/g, '_') + '_' + Date.now(), base64) : Promise.resolve(tempContractDoc);
+
+        uploadPromise.then(function(contractUrl) {
+          var targetClient;
+          if (id) {
+            targetClient = clients.find(function(x) { return x.id === id; });
+            if (targetClient) {
+              targetClient.type = type;
+              targetClient.name = name;
+              targetClient.dni = dni;
+              targetClient.location = loc;
+              targetClient.phone = phone;
+              targetClient.payDay = day;
+              targetClient.amount = amt;
+              if (contractUrl !== undefined) targetClient.contractDoc = contractUrl;
+            }
+          } else {
+            targetClient = {
+              id: 'c_' + Date.now(),
+              type: type, name: name, dni: dni, location: loc, phone: phone, payDay: day, amount: amt,
+              contractDoc: contractUrl,
+              status: 'ACTIVO', payments: []
+            };
+            clients.unshift(targetClient);
+          }
+
+          persistClient(targetClient);
+          btn.disabled = false;
+          btn.textContent = "Guardar Registro";
+          closeClientModal();
+          updateServiceFilterOptions();
+          updateYearFilterOptions();
+          if (currentMainView === 'DASHBOARD') renderDashboard();
+          else render();
+          showToast("Guardado con éxito");
+        });
+      });
+    }
+
+    function openPaymentModal(id) {
+      var c = clients.find(function(x) { return x.id === id; });
+      if (!c) return;
+      var now = getNow();
+      document.getElementById('paymentModalTitle').textContent = 'Registrar Cobro';
+      document.getElementById('payId').value = c.id;
+      document.getElementById('payEditPid').value = '';
+      document.getElementById('payClientDesc').textContent = c.name + (c.dni ? ' (DNI: ' + c.dni + ')' : '') + ' — Tarifa: S/ ' + Number(c.amount || 0).toFixed(2);
+      document.getElementById('payAmount').value = Number(c.amount || 0).toFixed(2);
+      document.getElementById('payMonth').value = now.monthKey;
+      document.getElementById('payDate').value = now.fullDate;
+      document.getElementById('payMethod').value = 'Yape';
+      document.getElementById('payNote').value = '';
+      document.getElementById('payReceiptFile').value = '';
+      document.getElementById('payInvoiceFile').value = '';
+      document.getElementById('payReceiptPreviewLink').innerHTML = '';
+      document.getElementById('payInvoicePreviewLink').innerHTML = '';
+      tempReceiptDoc = null;
+      tempInvoiceDoc = null;
+
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function openEditPaymentModal(cid, pid) {
+      var c = clients.find(function(x) { return x.id === cid; });
+      if (!c || !c.payments) return;
+      var p = c.payments.find(function(item) { return item.pid === pid; });
+      if (!p) return;
+
+      document.getElementById('paymentModalTitle').textContent = 'Editar Cobro';
+      document.getElementById('payId').value = c.id;
+      document.getElementById('payEditPid').value = p.pid;
+      document.getElementById('payClientDesc').textContent = c.name + (c.dni ? ' (DNI: ' + c.dni + ')' : '');
+      document.getElementById('payAmount').value = Number(p.amount || 0).toFixed(2);
+      document.getElementById('payMonth').value = p.monthKey || '';
+      document.getElementById('payDate').value = p.payDate || '';
+      document.getElementById('payMethod').value = p.method || 'Yape';
+      document.getElementById('payNote').value = p.note || '';
+      document.getElementById('payReceiptFile').value = '';
+      document.getElementById('payInvoiceFile').value = '';
+
+      tempReceiptDoc = p.receiptDoc || null;
+      tempInvoiceDoc = p.invoiceDoc || null;
+
+      var rSafe = getDirectDriveUrl(p.receiptDoc);
+      var iSafe = getDirectDriveUrl(p.invoiceDoc);
+
+      document.getElementById('payReceiptPreviewLink').innerHTML = rSafe 
+        ? '<a href="' + rSafe + '" target="_blank" rel="noopener noreferrer" class="btn-file">🧾 Voucher actual</a>' 
+        : '';
+      document.getElementById('payInvoicePreviewLink').innerHTML = iSafe 
+        ? '<a href="' + iSafe + '" target="_blank" rel="noopener noreferrer" class="btn-file">📄 Boleta actual</a>' 
+        : '';
+
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function savePayment() {
+      var id = document.getElementById('payId').value;
+      var editPid = document.getElementById('payEditPid').value;
+      var amt = parseFloat(document.getElementById('payAmount').value.replace(',', '.'));
+      var month = document.getElementById('payMonth').value;
+      var date = document.getElementById('payDate').value;
+      var method = document.getElementById('payMethod').value;
+      var note = document.getElementById('payNote').value.trim();
+
+      var receiptFileInput = document.getElementById('payReceiptFile');
+      var invoiceFileInput = document.getElementById('payInvoiceFile');
+
+      if (isNaN(amt) || amt <= 0) { alert("Monto inválido."); return; }
+      if (!month || !date) { alert("Indica mes y fecha de abono."); return; }
+
+      var btn = document.getElementById('btnSavePayment');
+      btn.disabled = true;
+      btn.textContent = "Procesando...";
+
+      var receiptFile = receiptFileInput.files ? receiptFileInput.files[0] : null;
+      var invoiceFile = invoiceFileInput.files ? invoiceFileInput.files[0] : null;
+
+      fileToBase64(receiptFile, function(receiptBase64) {
+        fileToBase64(invoiceFile, function(invoiceBase64) {
+          var p1 = receiptBase64 
+            ? uploadToDrivePromise('Voucher_' + id + '_' + Date.now(), receiptBase64) 
+            : Promise.resolve(tempReceiptDoc);
+
+          var p2 = invoiceBase64 
+            ? uploadToDrivePromise('Comprobante_' + id + '_' + Date.now(), invoiceBase64) 
+            : Promise.resolve(tempInvoiceDoc);
+
+          Promise.all([p1, p2]).then(function(urls) {
+            var receiptUrl = urls[0];
+            var invoiceUrl = urls[1];
+
+            var c = clients.find(function(x) { return x.id === id; });
+            if (c) {
+              if (!c.payments) c.payments = [];
+
+              if (editPid) {
+                // Modo Edición
+                var existingPay = c.payments.find(function(item) { return item.pid === editPid; });
+                if (existingPay) {
+                  existingPay.amount = amt;
+                  existingPay.monthKey = month;
+                  existingPay.payDate = date;
+                  existingPay.method = method;
+                  if (receiptUrl !== undefined) existingPay.receiptDoc = receiptUrl;
+                  if (invoiceUrl !== undefined) existingPay.invoiceDoc = invoiceUrl;
+                  existingPay.note = note;
+                }
+              } else {
+                // Modo Nuevo Pago
+                c.payments.unshift({
+                  pid: 'p_' + Date.now(),
+                  amount: amt,
+                  monthKey: month,
+                  payDate: date,
+                  method: method,
+                  receiptDoc: receiptUrl,
+                  invoiceDoc: invoiceUrl,
+                  note: note
+                });
+              }
+
+              persistClient(c);
+            }
+
+            btn.disabled = false;
+            btn.textContent = "Confirmar Cobro";
+            closePaymentModal();
+            updateYearFilterOptions();
+            showToast(editPid ? "Pago actualizado con éxito" : "Pago registrado con éxito");
+
+            // Si el modal de historial estaba abierto, actualizarlo
+            if (currentHistoryCid === id) {
+              openHistoryModal(id);
+            }
+
+            if (currentMainView === 'DASHBOARD') renderDashboard();
+            else render();
+          });
+        });
+      });
+    }
+
+    function openHistoryModal(id) {
+      currentHistoryCid = id;
+      var c = clients.find(function(x) { return x.id === id; });
+      if (!c) return;
+      document.getElementById('histClientDesc').textContent = c.name + (c.dni ? ' (DNI: ' + c.dni + ')' : '') + ' • ' + c.location;
+      var box = document.getElementById('historyItems');
+      box.innerHTML = '';
+
+      var payments = c.payments || [];
+      if (payments.length === 0) {
+        box.innerHTML = '<div style="text-align:center; padding:25px; color:#94a3b8; font-size:13px;">No hay pagos registrados para este cliente.</div>';
+      } else {
+        payments.forEach(function(p) {
+          var docsHtml = '';
+          var safeR = getDirectDriveUrl(p.receiptDoc);
+          var safeI = getDirectDriveUrl(p.invoiceDoc);
+
+          if (safeR) {
+            docsHtml += '<a href="' + safeR + '" target="_blank" rel="noopener noreferrer" class="btn-file">🧾 Voucher</a>';
+          }
+          if (safeI) {
+            docsHtml += '<a href="' + safeI + '" target="_blank" rel="noopener noreferrer" class="btn-file">📄 Boleta</a>';
+          }
+
+          var item = document.createElement('div');
+          item.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:10px 12px; border-radius:8px; font-size:13px; gap:8px;";
+          item.innerHTML = 
+            '<div style="flex:1;">' +
+              '<div style="font-weight:700; color:var(--text);">S/ ' + Number(p.amount || 0).toFixed(2) + ' <span style="font-weight:400; font-size:12px; color:var(--text-muted);">(' + p.method + ')</span></div>' +
+              '<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Mes cancelado: <b>' + p.monthKey + '</b> • Pagado el ' + p.payDate + (p.note ? ' - "' + esc(p.note) + '"' : '') + '</div>' +
+              '<div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">' + docsHtml + '</div>' +
+            '</div>' +
+            '<div style="display:flex; gap:4px; align-items:center;">' +
+              '<button class="btn-act" title="Editar este pago" onclick="openEditPaymentModal(\'' + c.id + '\',\'' + p.pid + '\')">✏️</button>' +
+              '<button style="border:none; background:none; color:var(--danger); font-size:16px; cursor:pointer; padding:6px;" title="Eliminar este pago" onclick="deletePay(\'' + c.id + '\',\'' + p.pid + '\')">🗑</button>' +
+            '</div>';
+          box.appendChild(item);
+        });
+      }
+      document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      currentHistoryCid = null;
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function deletePay(cid, pid) {
+      if (!confirm("¿Deseas anular este pago del historial?")) return;
+      var c = clients.find(function(x) { return x.id === cid; });
+      if (c && c.payments) {
+        c.payments = c.payments.filter(function(p) { return p.pid !== pid; });
+        persistClient(c);
+      }
+      openHistoryModal(cid);
+      if (currentMainView === 'DASHBOARD') renderDashboard();
+      else render();
+      showToast("Pago eliminado");
+    }
+
+    function terminate(id) {
+      if (!confirm("¿Culminar contrato? Ya no generará avisos de cobro.")) return;
+      var c = clients.find(function(x) { return x.id === id; });
+      if (c) {
+        c.status = 'CULMINADO';
+        persistClient(c);
+      }
+      updateServiceFilterOptions();
+      updateYearFilterOptions();
+      render();
+      showToast("Contrato culminado");
+    }
+
+    function reactivate(id) {
+      if (!confirm("¿Reactivar servicio para este cliente?")) return;
+      var c = clients.find(function(x) { return x.id === id; });
+      if (c) {
+        c.status = 'ACTIVO';
+        persistClient(c);
+      }
+      updateServiceFilterOptions();
+      updateYearFilterOptions();
+      render();
+      showToast("Servicio reactivado");
+    }
+
+    function deleteClient(id) {
+      if (!confirm("¿Estás seguro de eliminar este registro por completo junto a todo su historial y documentos?")) return;
+      clients = clients.filter(function(x) { return x.id !== id; });
+      callBackend('deleteClientRecord', id);
+      updateServiceFilterOptions();
+      updateYearFilterOptions();
+      if (currentMainView === 'DASHBOARD') renderDashboard();
+      else render();
+      showToast("Registro eliminado");
+    }
+
+    function sendWA(id) {
+      var c = clients.find(function(x) { return x.id === id; });
+      if (!c || !c.phone) return;
+      var clean = safeStr(c.phone).replace(/\D/g, '');
+      var phone = (clean.length === 9) ? ('51' + clean) : clean;
+      
+      var svc = 'el alquiler';
+      if (c.type === 'WIFI') svc = 'el servicio de Wi-Fi';
+      else if (c.type === 'LUZ') svc = 'el consumo de luz eléctrica';
+      else if (c.type === 'AGUA') svc = 'el consumo de agua potable';
+
+      var st = getStatus(c);
+
+      var txt = 'te recuerdo que el cobro mensual vence cada día ' + (c.payDay || 1) + '.';
+      if (st.alert) {
+        if (st.diff === 0) txt = 'te recuerdo que tu pago mensual vence HOY (día ' + (c.payDay || 1) + ').';
+        else if (st.diff > 0) txt = 'te recuerdo que tu fecha de cobro vence en ' + st.diff + ' día(s) (el día ' + (c.payDay || 1) + ').';
+        else txt = 'tu mensualidad presenta un retraso de ' + Math.abs(st.diff) + ' día(s).';
+      }
+
+      var msg = 'Hola ' + c.name + ', un cordial saludo. Respecto a ' + svc + ' (Tarifa: S/ ' + Number(c.amount || 0).toFixed(2) + '): ' + txt + ' Agradezco confirmarme al realizar el abono. ¡Muchas gracias!';
+      window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeClientModal();
+        closePaymentModal();
+        closeHistoryModal();
+      }
+    });
+
+    // Inicialización inmediata de la vista para evitar pantallas en blanco
+    initCorrelatedFilters();
+    render();
+
+    var dInit = new Date();
+    var dateString = dInit.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    var tElem = document.getElementById('todayText');
+    if (tElem) tElem.textContent = dateString;
+    var mElem = document.getElementById('mobDateText');
+    if (mElem) mElem.textContent = dateString;
+
+    // Carga asíncrona de datos desde Sheets
+    loadData();
+  </script>
+</body>
+</html>
