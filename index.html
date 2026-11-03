@@ -142,7 +142,25 @@
     .doc-viewer-modal { width: 92%; max-width: 820px; height: 86vh; display: flex; flex-direction: column; padding: 16px; border-radius: 16px; }
     .doc-viewer-frame { flex: 1; width: 100%; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
 
-    #toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: #1e1b4b; color: white; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; display: none; z-index: 100; box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    /* Pantalla de Inicio de Sesión */
+    .login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { background: #ffffff; width: 100%; max-width: 380px; border-radius: 20px; padding: 32px 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
+    .login-brand-icon { width: 56px; height: 56px; background: #6366f1; border-radius: 16px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 8px 18px rgba(99,102,241,0.35); }
+    .login-title { font-size: 20px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+    .login-subtitle { font-size: 12px; color: #64748b; margin-bottom: 22px; }
+    .login-form { text-align: left; display: flex; flex-direction: column; gap: 14px; }
+    .login-form label { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+    .login-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; }
+    .login-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
+    .login-btn { width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 8px; box-shadow: 0 4px 14px rgba(79,70,229,0.35); }
+    .login-btn:hover { background: #4338ca; }
+    .login-error { color: var(--danger); font-size: 12px; font-weight: 700; margin-top: 4px; display: none; text-align: center; }
+
+    /* Botón Cerrar Sesión */
+    .btn-logout { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; transition: 0.2s; }
+    .btn-logout:hover { background: rgba(239, 68, 68, 0.25); color: #fff; }
+
+    #toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: #1e1b4b; color: white; padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; display: none; z-index: 10000; box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
 
     @media (max-width: 1024px) and (min-width: 641px) {
       .sidebar { width: 220px; padding: 16px 12px; }
@@ -176,6 +194,28 @@
 </head>
 <body>
 
+  <!-- Pantalla de Login -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-brand-icon">🔐</div>
+      <h1 class="login-title">Cobros & Rentas</h1>
+      <p class="login-subtitle">Ingresa tus credenciales para acceder</p>
+
+      <form class="login-form" onsubmit="event.preventDefault(); doLogin();">
+        <div>
+          <label for="loginUser">Usuario</label>
+          <input type="text" id="loginUser" class="login-input" placeholder="Ingresa tu usuario" autocomplete="username" required>
+        </div>
+        <div>
+          <label for="loginPass">Contraseña</label>
+          <input type="password" id="loginPass" class="login-input" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <div id="loginErrorMsg" class="login-error">Usuario o contraseña incorrectos</div>
+        <button type="submit" class="login-btn">Iniciar Sesión</button>
+      </form>
+    </div>
+  </div>
+
   <div id="toast">Operación exitosa</div>
 
   <!-- Cabecera Móvil -->
@@ -187,7 +227,10 @@
         <p style="font-size:10px; color:#c7d2fe;" id="mobDateText"></p>
       </div>
     </div>
-    <button onclick="openClientModal()" style="background:#4f46e5; border:none; color:white; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700;">+ Nuevo</button>
+    <div style="display:flex; gap:6px;">
+      <button onclick="openClientModal()" style="background:#4f46e5; border:none; color:white; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700;">+ Nuevo</button>
+      <button onclick="doLogout()" style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; padding:8px 10px; border-radius:8px; font-size:12px; font-weight:700;" title="Cerrar Sesión">🚪</button>
+    </div>
   </header>
 
   <div class="app-layout">
@@ -226,6 +269,9 @@
           <div class="side-card-title">Total Proyectado Activo</div>
           <div class="side-card-val" style="color: #4ade80;" id="sideTotal">S/ 0.00</div>
         </div>
+        <button class="btn-logout" onclick="doLogout()">
+          <span>🚪</span> Cerrar Sesión (ELYN)
+        </button>
       </div>
     </aside>
 
@@ -561,6 +607,61 @@
 
   <script>
     var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiHWdy6ibdqIJPZ1Jm6m39QzQuYyWGQvK9btws0HZ-JutM2Yvz1Ojt0Sjgi0ZSX_PR/exec';
+
+    // -------------------------------------------------------------
+    // GESTIÓN DE SESIÓN Y CREDENCIALES
+    // -------------------------------------------------------------
+    var AUTH_USER = 'ELYN';
+    var AUTH_PASS = 'elyn';
+    var SESSION_KEY = 'cr_auth_token_elyn';
+
+    function checkAuth() {
+      var isLogged = localStorage.getItem(SESSION_KEY);
+      var overlay = document.getElementById('loginOverlay');
+      if (isLogged === 'true') {
+        if (overlay) overlay.style.display = 'none';
+        return true;
+      } else {
+        if (overlay) overlay.style.display = 'flex';
+        return false;
+      }
+    }
+
+    function doLogin() {
+      var userInp = document.getElementById('loginUser');
+      var passInp = document.getElementById('loginPass');
+      var errorMsg = document.getElementById('loginErrorMsg');
+
+      var u = userInp ? userInp.value.trim() : '';
+      var p = passInp ? passInp.value : '';
+
+      if (u.toUpperCase() === AUTH_USER && p === AUTH_PASS) {
+        localStorage.setItem(SESSION_KEY, 'true');
+        if (errorMsg) errorMsg.style.display = 'none';
+        document.getElementById('loginOverlay').style.display = 'none';
+        showToast("¡Bienvenida, " + AUTH_USER + "!");
+        if (clients.length === 0) loadData();
+      } else {
+        if (errorMsg) {
+          errorMsg.textContent = "Usuario o contraseña incorrectos";
+          errorMsg.style.display = 'block';
+        }
+        if (passInp) passInp.value = '';
+      }
+    }
+
+    function doLogout() {
+      if (!confirm("¿Deseas cerrar la sesión?")) return;
+      localStorage.removeItem(SESSION_KEY);
+      var userInp = document.getElementById('loginUser');
+      var passInp = document.getElementById('loginPass');
+      var errorMsg = document.getElementById('loginErrorMsg');
+      if (userInp) userInp.value = '';
+      if (passInp) passInp.value = '';
+      if (errorMsg) errorMsg.style.display = 'none';
+      document.getElementById('loginOverlay').style.display = 'flex';
+      showToast("Sesión cerrada");
+    }
 
     var clients = [];
     var currentMainView = 'RECORDS';
@@ -1558,6 +1659,9 @@
       }
     });
 
+    // Control de acceso inicial
+    var loggedIn = checkAuth();
+
     // Inicialización inmediata de la vista para evitar pantallas en blanco
     initCorrelatedFilters();
     render();
@@ -1569,8 +1673,10 @@
     var mElem = document.getElementById('mobDateText');
     if (mElem) mElem.textContent = dateString;
 
-    // Carga asíncrona de datos desde Sheets
-    loadData();
+    // Carga asíncrona de datos desde Sheets sólo si está autenticado
+    if (loggedIn) {
+      loadData();
+    }
   </script>
 </body>
 </html>
