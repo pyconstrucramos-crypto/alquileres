@@ -1089,6 +1089,9 @@
             '<button class="btn-act" style="flex:1;" onclick="openHistoryModal(\'' + c.id + '\')">Historial</button>' +
             (c.phone && c.status !== 'CULMINADO' ? '<button class="btn-act btn-act-wa" onclick="sendWA(\'' + c.id + '\')">WhatsApp</button>' : '') +
             '<button class="btn-act" onclick="openClientModal(\'' + c.id + '\')">✏️</button>' +
+            (c.status !== 'CULMINADO' 
+              ? '<button class="btn-act" style="color:var(--warning);" title="Culminar contrato" onclick="terminate(\'' + c.id + '\')">Culminar</button>' 
+              : '<button class="btn-act" style="color:var(--primary);" title="Reactivar contrato" onclick="reactivate(\'' + c.id + '\')">↻ Reactivar</button>') +
             '<button class="btn-act" style="color:var(--danger);" onclick="deleteClient(\'' + c.id + '\')">🗑</button>' +
           '</div>';
 
